@@ -1,0 +1,26 @@
+{
+	"name": "qunity",
+	"version": "1.0.0",
+	"main": "dist/bundle.umd.js",
+	"module": "dist/bundle.esm.js",
+	"types": "types.d.ts",
+	"license": "MIT",
+	"scripts": {
+		"dev": "rollup -c -w",
+		"build": "rollup -c",
+		"build:prod": "rollup -c --environment BUILD:production",
+		"dts": "dts-bundle-generator src/index.ts -o types.d.ts"
+	},
+	"devDependencies": {
+		"@rollup/plugin-commonjs": "^11.0.2",
+		"@rollup/plugin-node-resolve": "^7.1.1",
+		"dts-bundle-generator": "^5.0.0",
+		"rollup-plugin-typescript": "^1.0.1",
+		"rollup-plugin-uglify": "^6.0.2",
+		"tslib": "^1.10.0",
+		"typescript": "^3.5.3"
+	},
+	"dependencies": {
+		"whatwg-fetch": "^3.0.0"
+	}
+}

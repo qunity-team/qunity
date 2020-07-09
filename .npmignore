@@ -1,0 +1,6 @@
+# Created by .ignore support plugin (hsz.mobi)
+/src/
+/dist-distributed/
+/qunity.iml
+/.gitignore
+/rollup.config.js
