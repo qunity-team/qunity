@@ -36,7 +36,6 @@ function entity(app, key, value, pid) {
 function transPrefabUUID(uuid, pid) {
     return pid ? pid + '_' + uuid : uuid;
 }
-//# sourceMappingURL=protocols.js.map
 
 /*! *****************************************************************************
 Copyright (c) Microsoft Corporation. All rights reserved.
@@ -97,7 +96,6 @@ var HashObject = /** @class */ (function () {
     });
     return HashObject;
 }());
-//# sourceMappingURL=HashObject.js.map
 
 /**
  * Created by rockyl on 2020-04-07.
@@ -272,7 +270,6 @@ var QunityEvent = /** @class */ (function (_super) {
     };
     return QunityEvent;
 }(HashObject));
-//# sourceMappingURL=QunityEvent.js.map
 
 /**
  * Created by rockyl on 2020-03-10.
@@ -499,7 +496,6 @@ function parseViewDoc(app, docSource) {
     func(requireMethod, exports);
     return exports.doc;
 }
-//# sourceMappingURL=interpreter.js.map
 
 var AssetsManager = /** @class */ (function () {
     function AssetsManager(app) {
@@ -517,7 +513,6 @@ var AssetsManager = /** @class */ (function () {
     };
     return AssetsManager;
 }());
-//# sourceMappingURL=assets-manager.js.map
 
 /**
  * Created by rockyl on 2020-03-08.
@@ -835,7 +830,6 @@ var Application = /** @class */ (function () {
     };
     return Application;
 }());
-//# sourceMappingURL=Application.js.map
 
 /**
  * Created by rockyl on 2019-07-28.
@@ -1027,7 +1021,6 @@ var Component = /** @class */ (function (_super) {
     };
     return Component;
 }(HashObject));
-//# sourceMappingURL=Component.js.map
 
 /**
  * Created by rockyl on 2019-07-29.
@@ -1339,7 +1332,6 @@ var ComponentManager = /** @class */ (function () {
     };
     return ComponentManager;
 }());
-//# sourceMappingURL=ComponentManager.js.map
 
 /**
  * Created by rockyl on 2018/11/9.
@@ -1448,7 +1440,6 @@ function mutateProp(data, key, value, onChange) {
         }
     });
 }
-//# sourceMappingURL=dirty-field.js.map
 
 /**
  * Created by rockyl on 2020-04-01.
@@ -1458,7 +1449,6 @@ function mutateProp(data, key, value, onChange) {
  */
 function hidden() {
 }
-//# sourceMappingURL=editor.js.map
 
 /**
  * Created by rockyl on 2018/11/6.
@@ -1727,7 +1717,6 @@ var Vector2 = /** @class */ (function (_super) {
     ], Vector2.prototype, "y", void 0);
     return Vector2;
 }(HashObject));
-//# sourceMappingURL=vectors.js.map
 
 /**
  * Created by rockyl on 2020-03-07.
@@ -1838,7 +1827,6 @@ var EntityAdaptorBase = /** @class */ (function () {
     };
     return EntityAdaptorBase;
 }());
-//# sourceMappingURL=EntityAdaptor.js.map
 
 /**
  * Created by rockyl on 2020-03-09.
@@ -1981,7 +1969,6 @@ function objectStringify(obj) {
     }
     return arr.join('&');
 }
-//# sourceMappingURL=utils.js.map
 
 var support = {
   searchParams: 'URLSearchParams' in self,
@@ -2567,7 +2554,6 @@ function callApi(uri, _a) {
         }
     });
 }
-//# sourceMappingURL=http-request.js.map
 
 exports.Application = Application;
 exports.Component = Component;
