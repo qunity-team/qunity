@@ -1,5 +1,5 @@
 # Qunity
-![logo](https://rockyf.github.io/qunity-core/assets/logo.png)  
+![title](https://rockyf.github.io/qunity-core/assets/title.png)  
 Qunity是`E/C`(实体/组件)架构的实现，如果你会Unity开发，那应该对此很熟悉，Unity就是实现了E/C架构的最典型的例子。  
 ## Qunity
 与传统E/C架构的不同之处在于：Qunity是一个E/C架构的实现，但是只是一个核心功能，需要依附于其他渲染引擎才能算是一个完整的实现。比如，可以依附于Pixi.js或者Egret，站在巨人的肩膀上，而不是重复造轮子去实现一遍渲染引擎。
