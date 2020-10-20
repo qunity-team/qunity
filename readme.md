@@ -3,7 +3,7 @@
 ## An entity-component framework
 
 ## Docs
-[Docs](https://qunity-team.github.io/qunity)
+[Docs](https://qunity-team.github.io/qunity/)
 
 ## Build
 ``yarn build``  
