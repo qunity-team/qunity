@@ -1,5 +1,5 @@
 # qunity
-![Logo](https://rockyf.github.io/qunity/assets/Logo.png)  
+![logo](https://rockyf.github.io/qunity-core/assets/logo.png)  
 ## An entity-component framework
 
 ## Docs
