@@ -1,4 +1,4 @@
-# qunity
+# Qunity
 ![Title](https://qunity-team.github.io/qunity/assets/title.svg)  
 ## An entity-component framework
 
