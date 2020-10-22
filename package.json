@@ -1,6 +1,6 @@
 {
 	"name": "qunity",
-	"version": "1.0.0",
+	"version": "1.0.3",
 	"main": "dist/index.umd.js",
 	"module": "dist/index.esm.js",
 	"types": "types.d.ts",
@@ -10,13 +10,12 @@
 		"build": "rollup -c",
 		"build:prod": "rollup -c --environment BUILD:production",
 		"dts": "tsc && api-extractor run && rimraf ./dist-distributed",
-		"postinstall": "npm run build"
+		"prepublish": "npm run build"
 	},
 	"devDependencies": {
 		"@microsoft/api-extractor": "^7.10.4",
 		"@rollup/plugin-commonjs": "^11.0.2",
 		"@rollup/plugin-node-resolve": "^7.1.1",
-		"dts-bundle-generator": "^5.0.0",
 		"rimraf": "^3.0.2",
 		"rollup": "^2.32.1",
 		"rollup-plugin-typescript": "^1.0.1",

@@ -3,7 +3,6 @@
 /dist-distributed/
 /qunity.iml
 /.gitignore
-/rollup.config.js
 ### Node template
 # Logs
 logs
@@ -126,3 +125,4 @@ dist
 /temp/
 /docs/
 /tsdoc-metadata.json
+/rollup.config.js
