@@ -1021,6 +1021,11 @@
 	    Component.prototype.removeComponent = function (componentId, index) {
 	        return this.entity.removeComponent(componentId, index);
 	    };
+	    Component.prototype.$onModify = function (value, key, oldValue) {
+	        this.onFieldsChanged(value, key, oldValue);
+	    };
+	    Component.prototype.onFieldsChanged = function (value, key, oldValue) {
+	    };
 	    return Component;
 	}(HashObject));
 

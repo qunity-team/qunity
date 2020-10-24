@@ -72,6 +72,14 @@ export interface IComponent {
 	 * 获取全部组件
 	 */
 	getAllComponents(): IComponent[];
+
+	/**
+	 * 当监听的属性变化时触发
+	 * @param value
+	 * @param key
+	 * @param oldValue
+	 */
+	onFieldsChanged(value, key, oldValue);
 }
 
 /**
@@ -271,5 +279,12 @@ export class Component extends HashObject implements IComponent {
 
 	removeComponent(componentId: string | Function, index?: number): IComponent[] {
 		return this.entity.removeComponent(componentId, index);
+	}
+
+	$onModify(value, key, oldValue) {
+		this.onFieldsChanged(value, key, oldValue);
+	}
+
+	onFieldsChanged(value, key, oldValue) {
 	}
 }

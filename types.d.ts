@@ -27,19 +27,19 @@ export declare class Application {
     /**
      * 启动配置
      */
-    get launchOptions(): any;
+    readonly launchOptions: any;
     /**
      * 适配配置
      */
-    get adaptorOptions(): AdaptorOptions;
+    readonly adaptorOptions: AdaptorOptions;
     /**
      * 获取上下文
      */
-    get context(): any;
+    readonly context: any;
     /**
      * 舞台实例
      */
-    get stage(): any;
+    readonly stage: any;
     constructor();
     /**
      * 启动
@@ -112,7 +112,7 @@ export declare class Application {
     /**
      * 获取全部已注册的实体定义
      */
-    get entityDefs(): any;
+    readonly entityDefs: any;
     /**
      * 添加显示节点
      * @param node
@@ -200,14 +200,13 @@ export declare class Component extends HashObject implements IComponent {
     private _entityAdaptor;
     private _enabled;
     private _started;
-    get entityAdaptor(): IEntityAdaptor;
-    get entity(): IEntity;
+    readonly entityAdaptor: IEntityAdaptor;
+    readonly entity: IEntity;
     constructor();
     /**
      * 是否有效
      */
-    get enabled(): boolean;
-    set enabled(value: boolean);
+    enabled: boolean;
     /**
      * @private
      */
@@ -291,6 +290,8 @@ export declare class Component extends HashObject implements IComponent {
     getComponents(componentId: string | Function): IComponent[];
     removeAllComponents(): any;
     removeComponent(componentId: string | Function, index?: number): IComponent[];
+    $onModify(value: any, key: any, oldValue: any): void;
+    onFieldsChanged(value: any, key: any, oldValue: any): void;
 }
 
 /**
@@ -393,7 +394,7 @@ export declare class ComponentManager {
     /**
      * 获取所有组件
      */
-    private get all();
+    private readonly all;
     /**
      * 调用组件上的方法
      * @param methodName
@@ -463,15 +464,15 @@ export declare abstract class EntityAdaptorBase implements IEntityAdaptor {
     /**
      * @inheritDoc
      */
-    get components(): ComponentManager;
+    readonly components: ComponentManager;
     /**
      * @inheritDoc
      */
-    get entity(): any;
+    readonly entity: any;
     /**
      * @inheritDoc
      */
-    get app(): Application;
+    readonly app: Application;
     /**
      * @inheritDoc
      */
@@ -519,7 +520,7 @@ export declare function fieldChanged(onModify: any): (target: any, key: string) 
 export declare class HashObject {
     private _hashCode;
     constructor();
-    get hashCode(): number;
+    readonly hashCode: number;
 }
 
 /**
@@ -577,6 +578,13 @@ export declare interface IComponent {
      * 获取全部组件
      */
     getAllComponents(): IComponent[];
+    /**
+     * 当监听的属性变化时触发
+     * @param value
+     * @param key
+     * @param oldValue
+     */
+    onFieldsChanged(value: any, key: any, oldValue: any): any;
 }
 
 declare interface IDoc {
@@ -847,7 +855,7 @@ export declare class Vector2 extends HashObject implements vector2 {
     /**
      * 是不是一个0向量
      */
-    get isZero(): boolean;
+    readonly isZero: boolean;
     /**
      * 单位化向量
      */
@@ -855,7 +863,7 @@ export declare class Vector2 extends HashObject implements vector2 {
     /**
      * 是不是一个单位向量
      */
-    get isNormalized(): boolean;
+    readonly isNormalized: boolean;
     /**
      * 截取向量长度
      * @param max
@@ -909,14 +917,12 @@ export declare class Vector2 extends HashObject implements vector2 {
      * 向量角度
      * @param value
      */
-    set angle(value: number);
-    get angle(): number;
+    angle: number;
     /**
      * 向量弧度
      * @param value
      */
-    set radian(value: number);
-    get radian(): number;
+    radian: number;
     /**
      * 是否等于某个向量
      * @param v2
@@ -926,16 +932,15 @@ export declare class Vector2 extends HashObject implements vector2 {
      * 向量长度
      * @param value
      */
-    get length(): number;
-    set length(value: number);
+    length: number;
     /**
      * 获取向量长度的平方
      */
-    get lengthSQ(): number;
+    readonly lengthSQ: number;
     /**
      * 获取向量斜率
      */
-    get slope(): number;
+    readonly slope: number;
     toString(): string;
     toObj(): {
         x: number;
