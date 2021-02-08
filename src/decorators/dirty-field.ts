@@ -4,42 +4,61 @@
  * 属性装饰器
  */
 
+function mutateObject(data, onChange) {
+	if (!data['__mutated__']) {
+		for (var key in data) {
+			mutateProp(data, key, onChange);
+		}
+		Object.defineProperty(data, "__mutated__", {
+			value: true,
+			writable: false,
+			enumerable: false,
+			configurable: false
+		});
+	}
+}
+
+function mutateProp(data: any, key: string, onChange: Function): void {
+	let value = data[key];
+	Object.defineProperty(data, key, {
+		enumerable: true,
+		configurable: false,
+		get: function() {
+			return value;
+		},
+		set: function(v) {
+			let oldValue = value;
+			if (v == value) return;
+			value = v;
+			onChange.apply(this, [value, key, oldValue]);
+		}
+	});
+}
+
 /**
  * 属性修改时触发
  * @param onModify
  */
-export function fieldChanged(onModify) {
+export function watchField(onModify) {
 	return function (target: any, key: string) {
-		const privateKey = '_' + key;
-		Object.defineProperty(target, key, {
-			enumerable: true,
-			get: function () {
-				return this[privateKey];
-			},
-			set: function (v) {
-				const oldValue = this[privateKey];
-				if (oldValue !== v) {
-					this[privateKey] = v;
-					onModify.apply(this, [v, key, oldValue]);
-				}
-			}
-		})
+		mutateProp(target, key, onModify);
 	}
 }
 
 /**
- * 属性变脏时设置宿主的dirty属性为true
+ * 属性可观察
  */
-export const dirtyFieldDetector = fieldChanged(
+export const watch = watchField(
 	function (value, key, oldValue) {
 		this['__fieldDirty'] = true;
+		this['$onModify'].apply(this, [value, key, oldValue]);
 	}
 );
 
 /**
- * 深度属性变脏时设置宿主的dirty属性为true
+ * 属性可深度观察
  */
-export const deepDirtyFieldDetector = fieldChanged(
+export const deepWatch = watchField(
 	function (value, key, oldValue) {
 		const scope = this;
 		scope['__fieldDirty'] = true;
@@ -56,67 +75,3 @@ export const deepDirtyFieldDetector = fieldChanged(
 		}
 	}
 );
-
-/**
- * 属性变脏时触发onModify方法
- */
-export const dirtyFieldTrigger = fieldChanged(
-	function (value, key, oldValue) {
-		this['$onModify'] && this['$onModify'](value, key, oldValue);
-	}
-);
-
-/**
- * 深入属性变脏时触发onModify方法
- */
-export const deepDirtyFieldTrigger = fieldChanged(
-	function (value: any, key, oldValue) {
-		let onModify = this['$onModify'];
-		const scope = this;
-		if (onModify) {
-			onModify.call(scope, value, key, oldValue);
-
-			if (typeof value === 'object') {
-				if (value.hasOwnProperty('onChange')) {
-					value['onChange'] = onChange;
-				} else {
-					mutateObject(value, onChange);
-				}
-			}
-		}
-
-		function onChange(_value, _key, _oldValue) {
-			onModify.call(scope, value, key, oldValue, _key);
-		}
-	}
-);
-
-function mutateObject(data, onChange) {
-	if (!data['__mutated__']) {
-		for (var key in data) {
-			mutateProp(data, key, data[key], onChange);
-		}
-		Object.defineProperty(data, "__mutated__", {
-			value: true,
-			writable: false,
-			enumerable: false,
-			configurable: false
-		});
-	}
-}
-
-function mutateProp(data: any, key: string, value: any, onChange: Function): void {
-	Object.defineProperty(data, key, {
-		enumerable: true,
-		configurable: false,
-		get: () => {
-			return value;
-		},
-		set: v => {
-			let oldValue = value;
-			if (v == value) return;
-			value = v;
-			onChange(value, key, oldValue);
-		}
-	});
-}

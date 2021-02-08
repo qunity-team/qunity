@@ -3,14 +3,14 @@
 	"version": "1.0.3",
 	"main": "dist/index.umd.js",
 	"module": "dist/index.esm.js",
-	"types": "types.d.ts",
+	"types": "types/index.d.ts",
 	"license": "MIT",
 	"scripts": {
 		"dev": "rollup -c -w",
 		"build": "rollup -c",
 		"build:prod": "rollup -c --environment BUILD:production",
-		"dts": "tsc && api-extractor run && rimraf ./dist-distributed",
-		"prepublish": "npm run build"
+		"declare": "tsc -d --declarationDir 'types' --emitDeclarationOnly",
+		"prepublish": "npm run declare && npm run build"
 	},
 	"devDependencies": {
 		"@microsoft/api-extractor": "^7.10.4",

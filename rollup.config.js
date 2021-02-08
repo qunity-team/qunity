@@ -4,6 +4,7 @@
 
 import resolve from '@rollup/plugin-node-resolve';
 import commonjs from '@rollup/plugin-commonjs';
+
 const {uglify} = require('rollup-plugin-uglify');
 const typescript = require('rollup-plugin-typescript');
 
@@ -39,11 +40,8 @@ const options = {
 			typescript: require('typescript'),
 		}),
 		commonjs(),
+		prod && uglify({}),
 	]
 };
-
-if (prod) {
-	options.plugins.push(uglify({}));
-}
 
 export default options;

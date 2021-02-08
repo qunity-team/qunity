@@ -89,16 +89,5 @@ typings/
 # DynamoDB Local files
 .dynamodb/
 
-/dist-distributed/
-.gitignore
-assets/
-debug/
-def.d.ts
-index.html
-manifest.json
-package.json
-sample-blank.iml
-src/
-tsconfig.json
-yarn-error.log
-yarn.lock
+/dist
+/types

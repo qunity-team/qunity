@@ -15,6 +15,8 @@ export interface IComponent {
 
 	bubbling(methodName: string, ...args);
 
+	create();
+
 	awake();
 
 	start();
@@ -101,6 +103,7 @@ export class Component extends HashObject implements IComponent {
 	constructor() {
 		super();
 
+		this.create();
 	}
 
 	/**
@@ -139,6 +142,13 @@ export class Component extends HashObject implements IComponent {
 	$destroy() {
 		this._entityAdaptor = null;
 		this.onDestroy();
+	}
+
+	/**
+	 * 当组件被创建时
+	 */
+	create() {
+
 	}
 
 	/**
@@ -195,6 +205,7 @@ export class Component extends HashObject implements IComponent {
 			if (!this._started) {
 				this._started = true;
 				this.start();
+				this.onFieldsChanged();
 			}
 			this.update(delta);
 		}
@@ -281,10 +292,12 @@ export class Component extends HashObject implements IComponent {
 		return this.entity.removeComponent(componentId, index);
 	}
 
-	$onModify(value, key, oldValue) {
-		this.onFieldsChanged(value, key, oldValue);
+	private $onModify(value, key, oldValue) {
+		if (this._started) {
+			this.onFieldsChanged(value, key, oldValue);
+		}
 	}
 
-	onFieldsChanged(value, key, oldValue) {
+	onFieldsChanged(value?, key?, oldValue?) {
 	}
 }

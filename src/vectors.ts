@@ -4,7 +4,7 @@
  */
 
 import {HashObject} from "./HashObject";
-import {dirtyFieldTrigger} from "./decorators";
+import {watch} from "./decorators";
 import {vector2} from "./ReType";
 
 /**
@@ -14,13 +14,11 @@ export class Vector2 extends HashObject implements vector2{
 	/**
 	 * x分量
 	 */
-	@dirtyFieldTrigger
-	x: number;
+	@watch x: number;
 	/**
 	 * y分量
 	 */
-	@dirtyFieldTrigger
-	y: number;
+	@watch y: number;
 
 	onChange: Function;
 

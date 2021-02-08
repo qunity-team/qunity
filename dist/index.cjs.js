@@ -843,6 +843,7 @@ var Component = /** @class */ (function (_super) {
         var _this = _super.call(this) || this;
         _this._enabled = false;
         _this._started = false;
+        _this.create();
         return _this;
     }
     Object.defineProperty(Component.prototype, "entityAdaptor", {
@@ -898,6 +899,11 @@ var Component = /** @class */ (function (_super) {
         this.onDestroy();
     };
     /**
+     * 当组件被创建时
+     */
+    Component.prototype.create = function () {
+    };
+    /**
      * 当组件被唤醒时
      */
     Component.prototype.awake = function () {
@@ -939,6 +945,7 @@ var Component = /** @class */ (function (_super) {
             if (!this._started) {
                 this._started = true;
                 this.start();
+                this.onFieldsChanged();
             }
             this.update(delta);
         }
@@ -1020,7 +1027,9 @@ var Component = /** @class */ (function (_super) {
         return this.entity.removeComponent(componentId, index);
     };
     Component.prototype.$onModify = function (value, key, oldValue) {
-        this.onFieldsChanged(value, key, oldValue);
+        if (this._started) {
+            this.onFieldsChanged(value, key, oldValue);
+        }
     };
     Component.prototype.onFieldsChanged = function (value, key, oldValue) {
     };
@@ -1343,38 +1352,56 @@ var ComponentManager = /** @class */ (function () {
  *
  * 属性装饰器
  */
+function mutateObject(data, onChange) {
+    if (!data['__mutated__']) {
+        for (var key in data) {
+            mutateProp(data, key, onChange);
+        }
+        Object.defineProperty(data, "__mutated__", {
+            value: true,
+            writable: false,
+            enumerable: false,
+            configurable: false
+        });
+    }
+}
+function mutateProp(data, key, onChange) {
+    var value = data[key];
+    Object.defineProperty(data, key, {
+        enumerable: true,
+        configurable: false,
+        get: function () {
+            return value;
+        },
+        set: function (v) {
+            var oldValue = value;
+            if (v == value)
+                return;
+            value = v;
+            onChange.apply(this, [value, key, oldValue]);
+        }
+    });
+}
 /**
  * 属性修改时触发
  * @param onModify
  */
-function fieldChanged(onModify) {
+function watchField(onModify) {
     return function (target, key) {
-        var privateKey = '_' + key;
-        Object.defineProperty(target, key, {
-            enumerable: true,
-            get: function () {
-                return this[privateKey];
-            },
-            set: function (v) {
-                var oldValue = this[privateKey];
-                if (oldValue !== v) {
-                    this[privateKey] = v;
-                    onModify.apply(this, [v, key, oldValue]);
-                }
-            }
-        });
+        mutateProp(target, key, onModify);
     };
 }
 /**
- * 属性变脏时设置宿主的dirty属性为true
+ * 属性可观察
  */
-var dirtyFieldDetector = fieldChanged(function (value, key, oldValue) {
+var watch = watchField(function (value, key, oldValue) {
     this['__fieldDirty'] = true;
+    this['$onModify'].apply(this, [value, key, oldValue]);
 });
 /**
- * 深度属性变脏时设置宿主的dirty属性为true
+ * 属性可深度观察
  */
-var deepDirtyFieldDetector = fieldChanged(function (value, key, oldValue) {
+var deepWatch = watchField(function (value, key, oldValue) {
     var scope = this;
     scope['__fieldDirty'] = true;
     if (typeof value === 'object') {
@@ -1389,62 +1416,6 @@ var deepDirtyFieldDetector = fieldChanged(function (value, key, oldValue) {
         scope['__fieldDirty'] = true;
     }
 });
-/**
- * 属性变脏时触发onModify方法
- */
-var dirtyFieldTrigger = fieldChanged(function (value, key, oldValue) {
-    this['$onModify'] && this['$onModify'](value, key, oldValue);
-});
-/**
- * 深入属性变脏时触发onModify方法
- */
-var deepDirtyFieldTrigger = fieldChanged(function (value, key, oldValue) {
-    var onModify = this['$onModify'];
-    var scope = this;
-    if (onModify) {
-        onModify.call(scope, value, key, oldValue);
-        if (typeof value === 'object') {
-            if (value.hasOwnProperty('onChange')) {
-                value['onChange'] = onChange;
-            }
-            else {
-                mutateObject(value, onChange);
-            }
-        }
-    }
-    function onChange(_value, _key, _oldValue) {
-        onModify.call(scope, value, key, oldValue, _key);
-    }
-});
-function mutateObject(data, onChange) {
-    if (!data['__mutated__']) {
-        for (var key in data) {
-            mutateProp(data, key, data[key], onChange);
-        }
-        Object.defineProperty(data, "__mutated__", {
-            value: true,
-            writable: false,
-            enumerable: false,
-            configurable: false
-        });
-    }
-}
-function mutateProp(data, key, value, onChange) {
-    Object.defineProperty(data, key, {
-        enumerable: true,
-        configurable: false,
-        get: function () {
-            return value;
-        },
-        set: function (v) {
-            var oldValue = value;
-            if (v == value)
-                return;
-            value = v;
-            onChange(value, key, oldValue);
-        }
-    });
-}
 
 /**
  * Created by rockyl on 2020-04-01.
@@ -1715,10 +1686,10 @@ var Vector2 = /** @class */ (function (_super) {
         return Math.acos(v1.dotProd(v2) / (v1.length * v2.length));
     };
     __decorate([
-        dirtyFieldTrigger
+        watch
     ], Vector2.prototype, "x", void 0);
     __decorate([
-        dirtyFieldTrigger
+        watch
     ], Vector2.prototype, "y", void 0);
     return Vector2;
 }(HashObject));
@@ -2570,15 +2541,13 @@ exports.Vector2 = Vector2;
 exports.callApi = callApi;
 exports.copyProp = copyProp;
 exports.decodeJson5 = decodeJson5;
-exports.deepDirtyFieldDetector = deepDirtyFieldDetector;
-exports.deepDirtyFieldTrigger = deepDirtyFieldTrigger;
-exports.dirtyFieldDetector = dirtyFieldDetector;
-exports.dirtyFieldTrigger = dirtyFieldTrigger;
-exports.fieldChanged = fieldChanged;
+exports.deepWatch = deepWatch;
 exports.hidden = hidden;
 exports.injectProp = injectProp;
 exports.lerp = lerp;
 exports.lerpVector2 = lerpVector2;
 exports.lerpVector3 = lerpVector3;
 exports.objectStringify = objectStringify;
+exports.watch = watch;
+exports.watchField = watchField;
 //# sourceMappingURL=index.cjs.js.map
