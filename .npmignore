@@ -121,7 +121,6 @@ dist
 .yarn/install-state.gz
 .pnp.*
 
-/temp/
 /docs/
 /rollup.config.js
 *.iml

@@ -1,6 +1,6 @@
 {
 	"name": "qunity",
-	"version": "1.0.3",
+	"version": "1.0.4",
 	"main": "dist/index.umd.js",
 	"module": "dist/index.esm.js",
 	"types": "types/index.d.ts",
