@@ -5,6 +5,8 @@
 import {HashObject} from "./HashObject";
 import {IEntityAdaptor} from "./EntityAdaptor";
 import {IEntity} from "./IEntity";
+import {setupEvents} from "./events";
+import {makePropEventName, propInEventName} from "./utils";
 
 export interface IComponent {
 	readonly entityAdaptor: IEntityAdaptor;
@@ -81,7 +83,21 @@ export interface IComponent {
 	 * @param key
 	 * @param oldValue
 	 */
-	onFieldsChanged(value, key, oldValue);
+	onPropsChanged(value, key: string, oldValue);
+
+	/**
+	 * 监听单个属性变化
+	 * @param prop
+	 * @param callback
+	 */
+	watch(prop: string, callback: (value, key: string, oldValue) => void)
+
+	/**
+	 * 撤销监听单个属性变化
+	 * @param prop
+	 * @param callback
+	 */
+	unwatch(prop: string, callback: Function)
 }
 
 /**
@@ -91,6 +107,7 @@ export class Component extends HashObject implements IComponent {
 	private _entityAdaptor: IEntityAdaptor;
 	private _enabled: boolean = false;
 	private _started: boolean = false;
+	private _changedProps: any = {};
 
 	get entityAdaptor(): IEntityAdaptor {
 		return this._entityAdaptor;
@@ -102,6 +119,8 @@ export class Component extends HashObject implements IComponent {
 
 	constructor() {
 		super();
+
+		setupEvents(this, {prefix: '$'});
 
 		this.create();
 	}
@@ -205,8 +224,9 @@ export class Component extends HashObject implements IComponent {
 			if (!this._started) {
 				this._started = true;
 				this.start();
-				this.onFieldsChanged();
+				this.onPropsChanged();
 			}
+			this._emitPropEvents();
 			this.update(delta);
 		}
 	}
@@ -293,11 +313,62 @@ export class Component extends HashObject implements IComponent {
 	}
 
 	private $onModify(value, key, oldValue) {
+		this._propChanged(value, key, oldValue)
 		if (this._started) {
-			this.onFieldsChanged(value, key, oldValue);
+			this.onPropsChanged(value, key, oldValue);
 		}
 	}
 
-	onFieldsChanged(value?, key?, oldValue?) {
+	onPropsChanged(value?, key?, oldValue?) {
+	}
+
+	$on(event: string, callback: Function) {
+	}
+
+	$off(event: string, callback: Function) {
+	}
+
+	$emit(event: string, ...args) {
+	}
+
+	_propChanged(value, key, oldValue) {
+		this._changedProps[key] = [value, key, oldValue];
+	}
+
+	_emitPropEvents() {
+		let changedProps = this._changedProps;
+		let events = Object.keys(this['$events']);
+		let hintEvents = {};
+		for (let prop in changedProps) {
+			delete changedProps[prop];
+
+			for (let event of events) {
+				if (propInEventName(prop, event)) {
+					if (!hintEvents[event]) {
+						hintEvents[event] = [];
+					}
+					hintEvents[event].push(prop);
+				}
+			}
+		}
+		for (let event in hintEvents) {
+			this.$emit.apply(this, [event, hintEvents[event]]);
+		}
+	}
+
+	watch(prop: string | string[], callback: Function) {
+		if (!prop || (Array.isArray(prop) && prop.length == 0)) {
+			return false;
+		}
+		this.$on(makePropEventName(prop), callback);
+		return true;
+	}
+
+	unwatch(prop: string | string[], callback: Function) {
+		if (!prop || (Array.isArray(prop) && prop.length == 0)) {
+			return false;
+		}
+		this.$off(makePropEventName(prop), callback);
+		return true;
 	}
 }

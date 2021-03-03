@@ -515,6 +515,188 @@ var AssetsManager = /** @class */ (function () {
 }());
 
 /**
+ * Created by rockyl on 2020-03-09.
+ */
+/**
+ * 使方法有记忆能力
+ * @param fn
+ */
+function memorize(fn) {
+    var cache = {};
+    return function () {
+        var args = [];
+        for (var _i = 0; _i < arguments.length; _i++) {
+            args[_i] = arguments[_i];
+        }
+        var _args = JSON.stringify(args);
+        return cache[_args] || (cache[_args] = fn.apply(fn, args));
+    };
+}
+/**
+ * 线性插值
+ * @param begin number
+ * @param end number
+ * @param t number
+ * @param allowOutOfBounds
+ * @return number
+ */
+function lerp(begin, end, t, allowOutOfBounds) {
+    if (allowOutOfBounds === void 0) { allowOutOfBounds = false; }
+    if (!allowOutOfBounds) {
+        t = Math.max(0, Math.min(1, t));
+    }
+    var sign = end - begin;
+    sign = sign > 0 ? 1 : (sign < 0 ? -1 : 0);
+    var distance = Math.abs(end - begin);
+    return begin + distance * t * sign;
+}
+/**
+ * 线性插值
+ * @param begin
+ * @param end
+ * @param t number
+ * @param allowOutOfBounds
+ * @return number
+ */
+function lerpVector2(begin, end, t, allowOutOfBounds) {
+    if (allowOutOfBounds === void 0) { allowOutOfBounds = false; }
+    return {
+        x: lerp(begin.x, end.x, t, allowOutOfBounds),
+        y: lerp(begin.y, end.y, t, allowOutOfBounds),
+    };
+}
+/**
+ * 线性插值
+ * @param begin
+ * @param end
+ * @param t number
+ * @param allowOutOfBounds
+ * @return number
+ */
+function lerpVector3(begin, end, t, allowOutOfBounds) {
+    if (allowOutOfBounds === void 0) { allowOutOfBounds = false; }
+    return {
+        x: lerp(begin.x, end.x, t, allowOutOfBounds),
+        y: lerp(begin.y, end.y, t, allowOutOfBounds),
+        z: lerp(begin.z, end.z, t, allowOutOfBounds),
+    };
+}
+/**
+ * json5字符串转对象
+ * @param str
+ */
+function decodeJson5(str) {
+    var func = new Function('return ' + str);
+    try {
+        return func();
+    }
+    catch (e) {
+        console.warn(e);
+    }
+}
+function evalExp(exp, scope) {
+    try {
+        var func = Function("scope", "with(scope){return " + exp + "}");
+        return func(scope);
+    }
+    catch (e) {
+        console.warn('eval exp error:', e);
+    }
+}
+/**
+ * 属性注入方法
+ * @param target 目标对象
+ * @param data 被注入对象
+ * @param callback 自定义注入方法
+ * @param ignoreMethod 是否忽略方法
+ * @param ignoreNull 是否忽略Null字段
+ *
+ * @return 是否有字段注入
+ */
+function injectProp(target, data, callback, ignoreMethod, ignoreNull) {
+    if (ignoreMethod === void 0) { ignoreMethod = true; }
+    if (ignoreNull === void 0) { ignoreNull = true; }
+    if (!target || !data) {
+        return false;
+    }
+    var result = false;
+    for (var key in data) {
+        var value = data[key];
+        if ((!ignoreMethod || typeof value != 'function') && (!ignoreNull || value != null)) {
+            if (callback) {
+                callback(target, key, value);
+            }
+            else {
+                try {
+                    target[key] = value;
+                }
+                catch (e) {
+                }
+            }
+            result = true;
+        }
+    }
+    return result;
+}
+/**
+ * 属性拷贝
+ * @param target
+ * @param data
+ * @param schema
+ */
+function copyProp(target, data, schema) {
+    if (schema) {
+        for (var key in schema) {
+            var valueConfig = schema[key];
+            if (Array.isArray(valueConfig)) {
+                target[key] = {};
+                for (var _i = 0, valueConfig_1 = valueConfig; _i < valueConfig_1.length; _i++) {
+                    var field = valueConfig_1[_i];
+                    target[key][field] = data[key][field];
+                }
+            }
+            else if (typeof valueConfig === 'string') {
+                target[valueConfig] = data[valueConfig];
+            }
+            else if (typeof valueConfig === 'object') {
+                target[key] = {};
+                copyProp(target[key], data[key], valueConfig);
+            }
+        }
+    }
+}
+/**
+ * 对象转搜索字符串
+ * @param obj
+ */
+function objectStringify(obj) {
+    if (!obj) {
+        return '';
+    }
+    var arr = [];
+    for (var key in obj) {
+        arr.push(key + '=' + obj[key]);
+    }
+    return arr.join('&');
+}
+var WATCH_PROP_EVENT_PREFIX = 'prop-watch-';
+/**
+ * 生成属性事件名
+ * @param prop
+ */
+var makePropEventName = memorize(function (prop) {
+    return WATCH_PROP_EVENT_PREFIX + (Array.isArray(prop) ? prop.concat().sort().join('|') : prop);
+});
+/**
+ * 判断属性在事件名中
+ * @param prop
+ * @param events
+ */
+var propInEventName = memorize(function (prop, events) {
+    return events.replace(WATCH_PROP_EVENT_PREFIX, '').split('|').indexOf(prop) >= 0;
+});
+
+/**
  * Created by rockyl on 2020-03-08.
  */
 /**
@@ -573,6 +755,16 @@ var Application = /** @class */ (function () {
          */
         get: function () {
             return this._adaptorOptions.stage;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(Application.prototype, "stageSize", {
+        /**
+         * 舞台尺寸
+         */
+        get: function () {
+            return this._adaptorOptions.stageSizeFunc();
         },
         enumerable: true,
         configurable: true
@@ -665,7 +857,9 @@ var Application = /** @class */ (function () {
      */
     Application.prototype.registerComponentDef = function (id, def) {
         if (def) {
-            def['__class__'] = id;
+            if (typeof def === 'function') {
+                def['__class__'] = id;
+            }
             this._componentDefs[id] = def;
         }
     };
@@ -811,7 +1005,12 @@ var Application = /** @class */ (function () {
         var idType = typeof id;
         switch (idType) {
             case 'string':
-                def = this._componentDefs[id];
+                if (id.indexOf('/') == 0 || id.indexOf('uuid://') == 0) {
+                    def = this._componentDefs[id];
+                }
+                else {
+                    def = this._resolveExternalComponent(id);
+                }
                 break;
             case 'function':
                 def = id;
@@ -828,8 +1027,63 @@ var Application = /** @class */ (function () {
         }
         return def;
     };
+    Application.prototype._resolveExternalComponent = function (id) {
+        var i = id.indexOf(':');
+        var pkgName = id.substr(0, i);
+        var pkg = this._componentDefs[pkgName];
+        if (!pkg) {
+            return;
+        }
+        var exp = id.substr(i + 1);
+        var def = evalExp(exp, pkg);
+        if (def) {
+            def['__class__'] = id;
+        }
+        return def;
+    };
     return Application;
 }());
+
+/**
+ * Created by rockyl on 2021/2/15.
+ */
+/**
+ * 安装事件功能
+ * @param target
+ * @param options
+ */
+function setupEvents(target, options) {
+    if (options === void 0) { options = {}; }
+    var prefix = options.prefix;
+    var events = target.$events = {};
+    target[prefix + 'on'] = function (event, callback) {
+        var e = events[event];
+        if (!e) {
+            e = events[event] = [];
+        }
+        e.push(callback);
+    };
+    target[prefix + 'off'] = function (event, callback) {
+        var e = events[event];
+        if (e) {
+            var i = e.indexOf(callback);
+            e.splice(i, 1);
+        }
+    };
+    target[prefix + 'emit'] = function (event) {
+        var args = [];
+        for (var _i = 1; _i < arguments.length; _i++) {
+            args[_i - 1] = arguments[_i];
+        }
+        var e = events[event];
+        if (e) {
+            for (var _a = 0, e_1 = e; _a < e_1.length; _a++) {
+                var cb = e_1[_a];
+                cb.apply(target, args);
+            }
+        }
+    };
+}
 
 /**
  * Created by rockyl on 2019-07-28.
@@ -843,6 +1097,8 @@ var Component = /** @class */ (function (_super) {
         var _this = _super.call(this) || this;
         _this._enabled = false;
         _this._started = false;
+        _this._changedProps = {};
+        setupEvents(_this, { prefix: '$' });
         _this.create();
         return _this;
     }
@@ -945,8 +1201,9 @@ var Component = /** @class */ (function (_super) {
             if (!this._started) {
                 this._started = true;
                 this.start();
-                this.onFieldsChanged();
+                this.onPropsChanged();
             }
+            this._emitPropEvents();
             this.update(delta);
         }
     };
@@ -1027,11 +1284,59 @@ var Component = /** @class */ (function (_super) {
         return this.entity.removeComponent(componentId, index);
     };
     Component.prototype.$onModify = function (value, key, oldValue) {
+        this._propChanged(value, key, oldValue);
         if (this._started) {
-            this.onFieldsChanged(value, key, oldValue);
+            this.onPropsChanged(value, key, oldValue);
         }
     };
-    Component.prototype.onFieldsChanged = function (value, key, oldValue) {
+    Component.prototype.onPropsChanged = function (value, key, oldValue) {
+    };
+    Component.prototype.$on = function (event, callback) {
+    };
+    Component.prototype.$off = function (event, callback) {
+    };
+    Component.prototype.$emit = function (event) {
+        var args = [];
+        for (var _i = 1; _i < arguments.length; _i++) {
+            args[_i - 1] = arguments[_i];
+        }
+    };
+    Component.prototype._propChanged = function (value, key, oldValue) {
+        this._changedProps[key] = [value, key, oldValue];
+    };
+    Component.prototype._emitPropEvents = function () {
+        var changedProps = this._changedProps;
+        var events = Object.keys(this['$events']);
+        var hintEvents = {};
+        for (var prop in changedProps) {
+            delete changedProps[prop];
+            for (var _i = 0, events_1 = events; _i < events_1.length; _i++) {
+                var event = events_1[_i];
+                if (propInEventName(prop, event)) {
+                    if (!hintEvents[event]) {
+                        hintEvents[event] = [];
+                    }
+                    hintEvents[event].push(prop);
+                }
+            }
+        }
+        for (var event in hintEvents) {
+            this.$emit.apply(this, [event, hintEvents[event]]);
+        }
+    };
+    Component.prototype.watch = function (prop, callback) {
+        if (!prop || (Array.isArray(prop) && prop.length == 0)) {
+            return false;
+        }
+        this.$on(makePropEventName(prop), callback);
+        return true;
+    };
+    Component.prototype.unwatch = function (prop, callback) {
+        if (!prop || (Array.isArray(prop) && prop.length == 0)) {
+            return false;
+        }
+        this.$off(makePropEventName(prop), callback);
+        return true;
     };
     return Component;
 }(HashObject));
@@ -1366,19 +1671,22 @@ function mutateObject(data, onChange) {
     }
 }
 function mutateProp(data, key, onChange) {
-    var value = data[key];
+    var privateKey = '__' + key;
+    var initValue = data[key];
+    var setted = false;
     Object.defineProperty(data, key, {
         enumerable: true,
         configurable: false,
         get: function () {
-            return value;
+            return setted ? this[privateKey] : initValue;
         },
         set: function (v) {
-            var oldValue = value;
-            if (v == value)
+            if (v == this[privateKey])
                 return;
-            value = v;
-            onChange.apply(this, [value, key, oldValue]);
+            setted = true;
+            var oldValue = this[privateKey];
+            this[privateKey] = v;
+            onChange.apply(this, [v, key, oldValue]);
         }
     });
 }
@@ -1394,14 +1702,14 @@ function watchField(onModify) {
 /**
  * 属性可观察
  */
-var watch = watchField(function (value, key, oldValue) {
+var watchable = watchField(function (value, key, oldValue) {
     this['__fieldDirty'] = true;
     this['$onModify'].apply(this, [value, key, oldValue]);
 });
 /**
  * 属性可深度观察
  */
-var deepWatch = watchField(function (value, key, oldValue) {
+var deepWatchable = watchField(function (value, key, oldValue) {
     var scope = this;
     scope['__fieldDirty'] = true;
     if (typeof value === 'object') {
@@ -1686,10 +1994,10 @@ var Vector2 = /** @class */ (function (_super) {
         return Math.acos(v1.dotProd(v2) / (v1.length * v2.length));
     };
     __decorate([
-        watch
+        watchable
     ], Vector2.prototype, "x", void 0);
     __decorate([
-        watch
+        watchable
     ], Vector2.prototype, "y", void 0);
     return Vector2;
 }(HashObject));
@@ -1803,148 +2111,6 @@ var EntityAdaptorBase = /** @class */ (function () {
     };
     return EntityAdaptorBase;
 }());
-
-/**
- * Created by rockyl on 2020-03-09.
- */
-/**
- * 线性插值
- * @param begin number
- * @param end number
- * @param t number
- * @param allowOutOfBounds
- * @return number
- */
-function lerp(begin, end, t, allowOutOfBounds) {
-    if (allowOutOfBounds === void 0) { allowOutOfBounds = false; }
-    if (!allowOutOfBounds) {
-        t = Math.max(0, Math.min(1, t));
-    }
-    var sign = end - begin;
-    sign = sign > 0 ? 1 : (sign < 0 ? -1 : 0);
-    var distance = Math.abs(end - begin);
-    return begin + distance * t * sign;
-}
-/**
- * 线性插值
- * @param begin
- * @param end
- * @param t number
- * @param allowOutOfBounds
- * @return number
- */
-function lerpVector2(begin, end, t, allowOutOfBounds) {
-    if (allowOutOfBounds === void 0) { allowOutOfBounds = false; }
-    return {
-        x: lerp(begin.x, end.x, t, allowOutOfBounds),
-        y: lerp(begin.y, end.y, t, allowOutOfBounds),
-    };
-}
-/**
- * 线性插值
- * @param begin
- * @param end
- * @param t number
- * @param allowOutOfBounds
- * @return number
- */
-function lerpVector3(begin, end, t, allowOutOfBounds) {
-    if (allowOutOfBounds === void 0) { allowOutOfBounds = false; }
-    return {
-        x: lerp(begin.x, end.x, t, allowOutOfBounds),
-        y: lerp(begin.y, end.y, t, allowOutOfBounds),
-        z: lerp(begin.z, end.z, t, allowOutOfBounds),
-    };
-}
-/**
- * json5字符串转对象
- * @param str
- */
-function decodeJson5(str) {
-    var func = new Function('return ' + str);
-    try {
-        return func();
-    }
-    catch (e) {
-        console.warn(e);
-    }
-}
-/**
- * 属性注入方法
- * @param target 目标对象
- * @param data 被注入对象
- * @param callback 自定义注入方法
- * @param ignoreMethod 是否忽略方法
- * @param ignoreNull 是否忽略Null字段
- *
- * @return 是否有字段注入
- */
-function injectProp(target, data, callback, ignoreMethod, ignoreNull) {
-    if (ignoreMethod === void 0) { ignoreMethod = true; }
-    if (ignoreNull === void 0) { ignoreNull = true; }
-    if (!target || !data) {
-        return false;
-    }
-    var result = false;
-    for (var key in data) {
-        var value = data[key];
-        if ((!ignoreMethod || typeof value != 'function') && (!ignoreNull || value != null)) {
-            if (callback) {
-                callback(target, key, value);
-            }
-            else {
-                try {
-                    target[key] = value;
-                }
-                catch (e) {
-                }
-            }
-            result = true;
-        }
-    }
-    return result;
-}
-/**
- * 属性拷贝
- * @param target
- * @param data
- * @param schema
- */
-function copyProp(target, data, schema) {
-    if (schema) {
-        for (var key in schema) {
-            var valueConfig = schema[key];
-            if (Array.isArray(valueConfig)) {
-                target[key] = {};
-                for (var _i = 0, valueConfig_1 = valueConfig; _i < valueConfig_1.length; _i++) {
-                    var field = valueConfig_1[_i];
-                    target[key][field] = data[key][field];
-                }
-            }
-            else if (typeof valueConfig === 'string') {
-                target[valueConfig] = data[valueConfig];
-            }
-            else if (typeof valueConfig === 'object') {
-                target[key] = {};
-                copyProp(target[key], data[key], valueConfig);
-            }
-        }
-    }
-}
-/**
- * 对象转搜索字符串
- * @param obj
- */
-function objectStringify(obj) {
-    if (!obj) {
-        return '';
-    }
-    var arr = [];
-    for (var key in obj) {
-        arr.push(key + '=' + obj[key]);
-    }
-    return arr.join('&');
-}
 
 var support = {
   searchParams: 'URLSearchParams' in self,
@@ -2541,13 +2707,18 @@ exports.Vector2 = Vector2;
 exports.callApi = callApi;
 exports.copyProp = copyProp;
 exports.decodeJson5 = decodeJson5;
-exports.deepWatch = deepWatch;
+exports.deepWatchable = deepWatchable;
+exports.evalExp = evalExp;
 exports.hidden = hidden;
 exports.injectProp = injectProp;
 exports.lerp = lerp;
 exports.lerpVector2 = lerpVector2;
 exports.lerpVector3 = lerpVector3;
+exports.makePropEventName = makePropEventName;
+exports.memorize = memorize;
 exports.objectStringify = objectStringify;
-exports.watch = watch;
+exports.propInEventName = propInEventName;
+exports.setupEvents = setupEvents;
 exports.watchField = watchField;
+exports.watchable = watchable;
 //# sourceMappingURL=index.cjs.js.map

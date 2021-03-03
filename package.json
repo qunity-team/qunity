@@ -1,6 +1,6 @@
 {
 	"name": "qunity",
-	"version": "1.0.4",
+	"version": "1.1.0",
 	"main": "dist/index.umd.js",
 	"module": "dist/index.esm.js",
 	"types": "types/index.d.ts",
@@ -13,7 +13,6 @@
 		"prepublish": "npm run declare && npm run build"
 	},
 	"devDependencies": {
-		"@microsoft/api-extractor": "^7.10.4",
 		"@rollup/plugin-commonjs": "^11.0.2",
 		"@rollup/plugin-node-resolve": "^7.1.1",
 		"rimraf": "^3.0.2",

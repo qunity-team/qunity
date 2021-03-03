@@ -86,7 +86,7 @@ export abstract class EntityAdaptorBase implements IEntityAdaptor {
 		}
 	}
 
-	constructor(entity: any, app: Application) {
+	protected constructor(entity: any, app: Application) {
 		this._entity = entity;
 		this._app = app;
 		this._components = new ComponentManager(this, app);

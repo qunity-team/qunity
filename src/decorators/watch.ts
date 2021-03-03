@@ -19,18 +19,21 @@ function mutateObject(data, onChange) {
 }
 
 function mutateProp(data: any, key: string, onChange: Function): void {
-	let value = data[key];
+	const privateKey = '__' + key;
+	const initValue = data[key];
+	let setted = false;
 	Object.defineProperty(data, key, {
 		enumerable: true,
 		configurable: false,
-		get: function() {
-			return value;
+		get: function () {
+			return setted ? this[privateKey] : initValue;
 		},
-		set: function(v) {
-			let oldValue = value;
-			if (v == value) return;
-			value = v;
-			onChange.apply(this, [value, key, oldValue]);
+		set: function (v) {
+			if (v == this[privateKey]) return;
+			setted = true;
+			let oldValue = this[privateKey];
+			this[privateKey] = v;
+			onChange.apply(this, [v, key, oldValue]);
 		}
 	});
 }
@@ -48,7 +51,7 @@ export function watchField(onModify) {
 /**
  * 属性可观察
  */
-export const watch = watchField(
+export const watchable = watchField(
 	function (value, key, oldValue) {
 		this['__fieldDirty'] = true;
 		this['$onModify'].apply(this, [value, key, oldValue]);
@@ -58,7 +61,7 @@ export const watch = watchField(
 /**
  * 属性可深度观察
  */
-export const deepWatch = watchField(
+export const deepWatchable = watchField(
 	function (value, key, oldValue) {
 		const scope = this;
 		scope['__fieldDirty'] = true;

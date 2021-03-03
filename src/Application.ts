@@ -6,6 +6,7 @@ import {IEntityAdaptor} from "./EntityAdaptor";
 import {IEntity} from "./IEntity";
 import {IDoc, instantiate, parseViewDoc} from "./interpreter";
 import {AssetsManager} from "./assets-manager";
+import {evalExp} from "./utils";
 
 export interface AdaptorOptions {
 	stage: any;
@@ -14,6 +15,7 @@ export interface AdaptorOptions {
 	traverseFunc: (node: IEntity, callback: (node) => boolean | void) => void;
 	bubblingFunc: (node: IEntity, callback: (node) => boolean | void) => void;
 	loadAssetFunc: (config: any, onComplete: (res, opt) => void) => void;
+	stageSizeFunc: () => { width: number, height: number };
 	protocols?: {
 		[key: string]: (app: Application, key: string, value: any, pid?: number) => any,
 	};
@@ -60,6 +62,13 @@ export class Application {
 	 */
 	get stage() {
 		return this._adaptorOptions.stage;
+	}
+
+	/**
+	 * 舞台尺寸
+	 */
+	get stageSize() {
+		return this._adaptorOptions.stageSizeFunc();
 	}
 
 	constructor() {
@@ -120,7 +129,7 @@ export class Application {
 			});
 	}
 
-	_instantiateScene(doc:IDoc) {
+	_instantiateScene(doc: IDoc) {
 		return this.instantiate(doc);
 	}
 
@@ -164,7 +173,9 @@ export class Application {
 	 */
 	registerComponentDef(id, def) {
 		if (def) {
-			def['__class__'] = id;
+			if (typeof def === 'function') {
+				def['__class__'] = id;
+			}
 			this._componentDefs[id] = def;
 		}
 	}
@@ -328,7 +339,11 @@ export class Application {
 		let idType = typeof id;
 		switch (idType) {
 			case 'string':
-				def = this._componentDefs[id];
+				if (id.indexOf('/') == 0 || id.indexOf('uuid://') == 0) {
+					def = this._componentDefs[id];
+				} else {
+					def = this._resolveExternalComponent(id);
+				}
 				break;
 			case 'function':
 				def = id;
@@ -345,6 +360,21 @@ export class Application {
 			return;
 		}
 
+		return def;
+	}
+
+	_resolveExternalComponent(id) {
+		let i = id.indexOf(':');
+		let pkgName = id.substr(0, i);
+		let pkg = this._componentDefs[pkgName];
+		if (!pkg) {
+			return
+		}
+		let exp = id.substr(i + 1);
+		let def = evalExp(exp, pkg);
+		if(def){
+			def['__class__'] = id;
+		}
 		return def;
 	}
 }

@@ -3,6 +3,18 @@
  */
 
 /**
+ * 使方法有记忆能力
+ * @param fn
+ */
+export function memorize(fn: Function) {
+	const cache = {}
+	return function (...args) {
+		const _args = JSON.stringify(args)
+		return cache[_args] || (cache[_args] = fn.apply(fn, args))
+	}
+}
+
+/**
  * 线性插值
  * @param begin number
  * @param end number
@@ -30,7 +42,7 @@ export function lerp(begin: number, end: number, t: number, allowOutOfBounds = f
  * @param allowOutOfBounds
  * @return number
  */
-export function lerpVector2(begin: {x: number, y: number}, end: {x: number, y: number}, t: number, allowOutOfBounds = false) {
+export function lerpVector2(begin: { x: number, y: number }, end: { x: number, y: number }, t: number, allowOutOfBounds = false) {
 	return {
 		x: lerp(begin.x, end.x, t, allowOutOfBounds),
 		y: lerp(begin.y, end.y, t, allowOutOfBounds),
@@ -45,7 +57,7 @@ export function lerpVector2(begin: {x: number, y: number}, end: {x: number, y: n
  * @param allowOutOfBounds
  * @return number
  */
-export function lerpVector3(begin: {x: number, y: number, z: number}, end: {x: number, y: number,  z: number}, t: number, allowOutOfBounds = false) {
+export function lerpVector3(begin: { x: number, y: number, z: number }, end: { x: number, y: number, z: number }, t: number, allowOutOfBounds = false) {
 	return {
 		x: lerp(begin.x, end.x, t, allowOutOfBounds),
 		y: lerp(begin.y, end.y, t, allowOutOfBounds),
@@ -57,12 +69,21 @@ export function lerpVector3(begin: {x: number, y: number, z: number}, end: {x: n
  * json5字符串转对象
  * @param str
  */
-export function decodeJson5(str){
+export function decodeJson5(str) {
 	let func = new Function('return ' + str);
 	try {
 		return func();
-	}catch (e) {
+	} catch (e) {
 		console.warn(e);
+	}
+}
+
+export function evalExp(exp, scope) {
+	try {
+		let func = Function("scope", "with(scope){return " + exp + "}") as (scope: any) => any;
+		return func(scope);
+	} catch (e) {
+		console.warn('eval exp error:', e);
 	}
 }
 
@@ -140,3 +161,22 @@ export function objectStringify(obj) {
 	}
 	return arr.join('&');
 }
+
+const WATCH_PROP_EVENT_PREFIX = 'prop-watch-';
+
+/**
+ * 生成属性事件名
+ * @param prop
+ */
+export const makePropEventName = memorize(function (prop) {
+	return WATCH_PROP_EVENT_PREFIX + (Array.isArray(prop) ? prop.concat().sort().join('|') : prop);
+});
+
+/**
+ * 判断属性在事件名中
+ * @param prop
+ * @param events
+ */
+export const propInEventName = memorize(function (prop, events) {
+	return events.replace(WATCH_PROP_EVENT_PREFIX, '').split('|').indexOf(prop) >= 0;
+});

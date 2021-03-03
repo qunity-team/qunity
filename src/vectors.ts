@@ -4,7 +4,7 @@
  */
 
 import {HashObject} from "./HashObject";
-import {watch} from "./decorators";
+import {watchable} from "./decorators";
 import {vector2} from "./ReType";
 
 /**
@@ -14,11 +14,11 @@ export class Vector2 extends HashObject implements vector2{
 	/**
 	 * x分量
 	 */
-	@watch x: number;
+	@watchable x: number;
 	/**
 	 * y分量
 	 */
-	@watch y: number;
+	@watchable y: number;
 
 	onChange: Function;
 
