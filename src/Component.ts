@@ -2,80 +2,80 @@
  * Created by rockyl on 2019-07-28.
  */
 
-import {HashObject} from "./HashObject";
-import {IEntityAdaptor} from "./EntityAdaptor";
-import {IEntity} from "./IEntity";
-import {setupEvents} from "./events";
-import {makePropEventName, propInEventName} from "./utils";
+import {HashObject} from "./HashObject"
+import {IEntityAdaptor} from "./EntityAdaptor"
+import {IEntity} from "./IEntity"
+import {setupEvents} from "./events"
+import {makePropEventName, propInEventName} from "./utils"
 
 export interface IComponent {
-	readonly entityAdaptor: IEntityAdaptor;
-	readonly entity: any;
-	enabled: boolean;
+	readonly entityAdaptor: IEntityAdaptor
+	readonly entity: any
+	enabled: boolean
 
-	broadcast(methodName: string, ...args);
+	broadcast(methodName: string, ...args)
 
-	bubbling(methodName: string, ...args);
+	bubbling(methodName: string, ...args)
 
-	create();
+	create()
 
-	awake();
+	awake()
 
-	start();
+	start()
 
-	onEnable();
+	onEnable()
 
-	onDisable();
+	onDisable()
 
-	update(delta: number);
+	update(delta: number)
 
-	onDestroy();
+	onDestroy()
 
-	onClick(e);
+	onClick(e)
 
-	onMouseDown(e);
+	onMouseDown(e)
 
-	onMouseMove(e);
+	onMouseMove(e)
 
-	onMouseUp(e);
+	onMouseUp(e)
 
-	onMouseUpOutside(e);
+	onMouseUpOutside(e)
 
 	/**
 	 * 添加组件
 	 * @param componentId
 	 * @param enabled
 	 */
-	addComponent(componentId: string | Function, enabled?: boolean): IComponent;
+	addComponent(componentId: string | Function, enabled?: boolean): IComponent
 
 	/**
 	 * 移除组件
 	 * @param componentId
 	 * @param index
 	 */
-	removeComponent(componentId: string | Function, index?: number): IComponent[];
+	removeComponent(componentId: string | Function, index?: number): IComponent[]
 
 	/**
 	 * 移除所有组件
 	 */
-	removeAllComponents();
+	removeAllComponents()
 
 	/**
 	 * 获取组件
 	 * @param componentId
 	 */
-	getComponent(componentId: string | Function): IComponent;
+	getComponent(componentId: string | Function): IComponent
 
 	/**
 	 * 获取组件组
 	 * @param componentId
 	 */
-	getComponents(componentId: string | Function): IComponent[];
+	getComponents(componentId: string | Function): IComponent[]
 
 	/**
 	 * 获取全部组件
 	 */
-	getAllComponents(): IComponent[];
+	getAllComponents(): IComponent[]
 
 	/**
 	 * 当监听的属性变化时触发
@@ -83,7 +83,7 @@ export interface IComponent {
 	 * @param key
 	 * @param oldValue
 	 */
-	onPropsChanged(value, key: string, oldValue);
+	onPropsChanged(value, key: string, oldValue)
 
 	/**
 	 * 监听单个属性变化
@@ -104,44 +104,44 @@ export interface IComponent {
  * 组件类
  */
 export class Component extends HashObject implements IComponent {
-	private _entityAdaptor: IEntityAdaptor;
-	private _enabled: boolean = false;
-	private _started: boolean = false;
-	private _changedProps: any = {};
+	private _entityAdaptor: IEntityAdaptor
+	private _enabled: boolean = false
+	private _started: boolean = false
+	private _changedProps: any = {}
 
 	get entityAdaptor(): IEntityAdaptor {
-		return this._entityAdaptor;
+		return this._entityAdaptor
 	}
 
 	get entity(): IEntity {
-		return this._entityAdaptor.entity;
+		return this._entityAdaptor.entity
 	}
 
 	constructor() {
-		super();
+		super()
 
-		setupEvents(this, {prefix: '$'});
+		setupEvents(this, {prefix: '$'})
 
-		this.create();
+		this.create()
 	}
 
 	/**
 	 * 是否有效
 	 */
 	get enabled(): boolean {
-		return this._enabled;
+		return this._enabled
 	}
 
 	set enabled(value: boolean) {
 		if (this._enabled != value) {
-			this._enabled = value;
+			this._enabled = value
 
 			if (this._entityAdaptor && this._entityAdaptor.getActive()) {
 				if (value) {
-					this._started = false;
-					this.onEnable();
+					this._started = false
+					this.onEnable()
 				} else {
-					this.onDisable();
+					this.onDisable()
 				}
 			}
 		}
@@ -151,16 +151,16 @@ export class Component extends HashObject implements IComponent {
 	 * @private
 	 */
 	$awake(entityAdaptor: IEntityAdaptor) {
-		this._entityAdaptor = entityAdaptor;
-		this.awake();
+		this._entityAdaptor = entityAdaptor
+		this.awake()
 	}
 
 	/**
 	 * @private
 	 */
 	$destroy() {
-		this._entityAdaptor = null;
-		this.onDestroy();
+		this._entityAdaptor = null
+		this.onDestroy()
 	}
 
 	/**
@@ -222,12 +222,12 @@ export class Component extends HashObject implements IComponent {
 	$onUpdate(delta: number) {
 		if (this._enabled) {
 			if (!this._started) {
-				this._started = true;
-				this.start();
-				this.onPropsChanged();
+				this._started = true
+				this.start()
+				this.onPropsChanged()
 			}
-			this._emitPropEvents();
-			this.update(delta);
+			this._emitPropEvents()
+			this.update(delta)
 		}
 	}
 
@@ -273,7 +273,7 @@ export class Component extends HashObject implements IComponent {
 	 */
 	broadcast(methodName: string, ...args) {
 		this._entityAdaptor.app.traverseDisplayNode(this.entity, (node: IEntity) => {
-			node.invokeOnComponents && node.invokeOnComponents(methodName, args);
+			node.invokeOnComponents && node.invokeOnComponents(methodName, args)
 		})
 	}
 
@@ -284,38 +284,38 @@ export class Component extends HashObject implements IComponent {
 	 */
 	bubbling(methodName: string, ...args) {
 		this._entityAdaptor.app.bubblingDisplayNode(this.entity, (node: IEntity) => {
-			node.invokeOnComponents && node.invokeOnComponents(methodName, args);
+			node.invokeOnComponents && node.invokeOnComponents(methodName, args)
 		})
 	}
 
 	addComponent(componentId: string | Function, enabled?: boolean): IComponent {
-		return this.entity.addComponent(componentId, enabled);
+		return this.entity.addComponent(componentId, enabled)
 	}
 
 	getAllComponents(): IComponent[] {
-		return this.entity.getAllComponents();
+		return this.entity.getAllComponents()
 	}
 
 	getComponent(componentId: string | Function): IComponent {
-		return this.entity.getComponent(componentId);
+		return this.entity.getComponent(componentId)
 	}
 
 	getComponents(componentId: string | Function): IComponent[] {
-		return this.entity.getComponents(componentId);
+		return this.entity.getComponents(componentId)
 	}
 
 	removeAllComponents() {
-		return this.entity.removeAllComponents();
+		return this.entity.removeAllComponents()
 	}
 
 	removeComponent(componentId: string | Function, index?: number): IComponent[] {
-		return this.entity.removeComponent(componentId, index);
+		return this.entity.removeComponent(componentId, index)
 	}
 
 	private $onModify(value, key, oldValue) {
 		this._propChanged(value, key, oldValue)
 		if (this._started) {
-			this.onPropsChanged(value, key, oldValue);
+			this.onPropsChanged(value, key, oldValue)
 		}
 	}
 
@@ -332,43 +332,43 @@ export class Component extends HashObject implements IComponent {
 	}
 
 	_propChanged(value, key, oldValue) {
-		this._changedProps[key] = [value, key, oldValue];
+		this._changedProps[key] = [value, key, oldValue]
 	}
 
 	_emitPropEvents() {
-		let changedProps = this._changedProps;
-		let events = Object.keys(this['$events']);
-		let hintEvents = {};
+		let changedProps = this._changedProps
+		let events = Object.keys(this['$events'])
+		let hintEvents = {}
 		for (let prop in changedProps) {
-			delete changedProps[prop];
+			delete changedProps[prop]
 
 			for (let event of events) {
 				if (propInEventName(prop, event)) {
 					if (!hintEvents[event]) {
-						hintEvents[event] = [];
+						hintEvents[event] = []
 					}
-					hintEvents[event].push(prop);
+					hintEvents[event].push(prop)
 				}
 			}
 		}
 		for (let event in hintEvents) {
-			this.$emit.apply(this, [event, hintEvents[event]]);
+			this.$emit.apply(this, [event, hintEvents[event]])
 		}
 	}
 
 	watch(prop: string | string[], callback: Function) {
 		if (!prop || (Array.isArray(prop) && prop.length == 0)) {
-			return false;
+			return false
 		}
-		this.$on(makePropEventName(prop), callback);
-		return true;
+		this.$on(makePropEventName(prop), callback)
+		return true
 	}
 
 	unwatch(prop: string | string[], callback: Function) {
 		if (!prop || (Array.isArray(prop) && prop.length == 0)) {
-			return false;
+			return false
 		}
-		this.$off(makePropEventName(prop), callback);
-		return true;
+		this.$off(makePropEventName(prop), callback)
+		return true
 	}
 }

@@ -24,14 +24,14 @@ export function memorize(fn: Function) {
  */
 export function lerp(begin: number, end: number, t: number, allowOutOfBounds = false) {
 	if (!allowOutOfBounds) {
-		t = Math.max(0, Math.min(1, t));
+		t = Math.max(0, Math.min(1, t))
 	}
 
-	let sign = end - begin;
-	sign = sign > 0 ? 1 : (sign < 0 ? -1 : 0);
-	const distance = Math.abs(end - begin);
+	let sign = end - begin
+	sign = sign > 0 ? 1 : (sign < 0 ? -1 : 0)
+	const distance = Math.abs(end - begin)
 
-	return begin + distance * t * sign;
+	return begin + distance * t * sign
 }
 
 /**
@@ -46,7 +46,7 @@ export function lerpVector2(begin: { x: number, y: number }, end: { x: number, y
 	return {
 		x: lerp(begin.x, end.x, t, allowOutOfBounds),
 		y: lerp(begin.y, end.y, t, allowOutOfBounds),
-	};
+	}
 }
 
 /**
@@ -62,7 +62,7 @@ export function lerpVector3(begin: { x: number, y: number, z: number }, end: { x
 		x: lerp(begin.x, end.x, t, allowOutOfBounds),
 		y: lerp(begin.y, end.y, t, allowOutOfBounds),
 		z: lerp(begin.z, end.z, t, allowOutOfBounds),
-	};
+	}
 }
 
 /**
@@ -70,20 +70,20 @@ export function lerpVector3(begin: { x: number, y: number, z: number }, end: { x
  * @param str
  */
 export function decodeJson5(str) {
-	let func = new Function('return ' + str);
+	let func = new Function('return ' + str)
 	try {
-		return func();
+		return func()
 	} catch (e) {
-		console.warn(e);
+		console.warn(e)
 	}
 }
 
 export function evalExp(exp, scope) {
 	try {
-		let func = Function("scope", "with(scope){return " + exp + "}") as (scope: any) => any;
-		return func(scope);
+		let func = Function("scope", "with(scope){return " + exp + "}") as (scope: any) => any
+		return func(scope)
 	} catch (e) {
-		console.warn('eval exp error:', e);
+		console.warn('eval exp error:', e)
 	}
 }
 
@@ -99,27 +99,27 @@ export function evalExp(exp, scope) {
  */
 export function injectProp(target: any, data?: any, callback?: Function, ignoreMethod: boolean = true, ignoreNull: boolean = true): boolean {
 	if (!target || !data) {
-		return false;
+		return false
 	}
 
-	let result = false;
+	let result = false
 	for (let key in data) {
-		let value: any = data[key];
+		let value: any = data[key]
 		if ((!ignoreMethod || typeof value != 'function') && (!ignoreNull || value != null)) {
 			if (callback) {
-				callback(target, key, value);
+				callback(target, key, value)
 			} else {
 				try {
-					target[key] = value;
+					target[key] = value
 				} catch (e) {
 
 				}
 			}
 
-			result = true;
+			result = true
 		}
 	}
-	return result;
+	return result
 }
 
 /**
@@ -131,16 +131,16 @@ export function injectProp(target: any, data?: any, callback?: Function, ignoreM
 export function copyProp(target, data?, schema?) {
 	if (schema) {
 		for (let key in schema) {
-			let valueConfig = schema[key];
+			let valueConfig = schema[key]
 			if (Array.isArray(valueConfig)) {
-				target[key] = {};
+				target[key] = {}
 				for (let field of valueConfig) {
-					target[key][field] = data[key][field];
+					target[key][field] = data[key][field]
 				}
 			} else if (typeof valueConfig === 'string') {
-				target[valueConfig] = data[valueConfig];
+				target[valueConfig] = data[valueConfig]
 			} else if (typeof valueConfig === 'object') {
-				target[key] = {};
+				target[key] = {}
 				copyProp(target[key], data[key], valueConfig)
 			}
 		}
@@ -153,24 +153,24 @@ export function copyProp(target, data?, schema?) {
  */
 export function objectStringify(obj) {
 	if (!obj) {
-		return '';
+		return ''
 	}
-	let arr = [];
+	let arr = []
 	for (let key in obj) {
-		arr.push(key + '=' + obj[key]);
+		arr.push(key + '=' + obj[key])
 	}
-	return arr.join('&');
+	return arr.join('&')
 }
 
-const WATCH_PROP_EVENT_PREFIX = 'prop-watch-';
+const WATCH_PROP_EVENT_PREFIX = 'prop-watch-'
 
 /**
  * 生成属性事件名
  * @param prop
  */
 export const makePropEventName = memorize(function (prop) {
-	return WATCH_PROP_EVENT_PREFIX + (Array.isArray(prop) ? prop.concat().sort().join('|') : prop);
-});
+	return WATCH_PROP_EVENT_PREFIX + (Array.isArray(prop) ? prop.concat().sort().join('|') : prop)
+})
 
 /**
  * 判断属性在事件名中
@@ -178,5 +178,5 @@ export const makePropEventName = memorize(function (prop) {
  * @param events
  */
 export const propInEventName = memorize(function (prop, events) {
-	return events.replace(WATCH_PROP_EVENT_PREFIX, '').split('|').indexOf(prop) >= 0;
-});
+	return events.replace(WATCH_PROP_EVENT_PREFIX, '').split('|').indexOf(prop) >= 0
+})

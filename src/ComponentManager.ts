@@ -2,56 +2,56 @@
  * Created by rockyl on 2019-07-29.
  */
 
-import {Component} from "./Component";
-import {IEntityAdaptor} from "./EntityAdaptor";
-import {Application} from "./Application";
+import {Component} from "./Component"
+import {IEntityAdaptor} from "./EntityAdaptor"
+import {Application} from "./Application"
 
 /**
  * 组件管理类
  */
 export class ComponentManager {
-	private _app: Application;
-	private _entityAdaptor: IEntityAdaptor;
-	private _components: Component[] = [];
-	private _componentsNameMapping: any;
-	private _componentsDefMapping: any;
+	private _app: Application
+	private _entityAdaptor: IEntityAdaptor
+	private _components: Component[] = []
+	private _componentsNameMapping: any
+	private _componentsDefMapping: any
 
 	constructor(entityAdaptor: IEntityAdaptor, app: Application) {
-		this._app = app;
-		this._entityAdaptor = entityAdaptor;
+		this._app = app
+		this._entityAdaptor = entityAdaptor
 
-		this.applyProxy();
+		this.applyProxy()
 	}
 
 	applyProxy() {
-		let entity = this._entityAdaptor.entity;
+		let entity = this._entityAdaptor.entity
 
 		Object.defineProperty(entity, 'stage', {
 			get() {
-				return this.entityAdaptor.app.stage;
+				return this.entityAdaptor.app.stage
 			}
-		});
+		})
 		entity.addComponent = (componentId: string | Function, enabled: boolean = true) => {
-			return this.addComponent(componentId, true, enabled);
-		};
+			return this.addComponent(componentId, true, enabled)
+		}
 		entity.removeComponent = (componentId: string | Function, index?: number) => {
-			return this.removeComponent(componentId, index);
-		};
+			return this.removeComponent(componentId, index)
+		}
 		entity.removeAllComponents = () => {
-			this.removeAllComponents();
-		};
+			this.removeAllComponents()
+		}
 		entity.getComponent = (componentId: string | Function) => {
-			return this.getComponent(componentId);
-		};
+			return this.getComponent(componentId)
+		}
 		entity.getComponents = (componentId: string | Function) => {
-			return this.getComponents(componentId);
-		};
+			return this.getComponents(componentId)
+		}
 		entity.getAllComponents = () => {
-			return this.getAllComponents();
-		};
+			return this.getAllComponents()
+		}
 		entity.invokeOnComponents = (methodName: string, args) => {
-			return this.invokeOnComponents(methodName, args);
-		};
+			return this.invokeOnComponents(methodName, args)
+		}
 	}
 
 	/**
@@ -59,7 +59,7 @@ export class ComponentManager {
 	 * @param callback
 	 */
 	eachComponent(callback: (component: Component, index: number) => unknown) {
-		this._components.some(<any>callback);
+		this._components.some(<any>callback)
 	}
 
 	/**
@@ -70,9 +70,9 @@ export class ComponentManager {
 		this.eachComponent(component => {
 			if (component.enabled) {
 				if (active) {
-					component.onEnable();
+					component.onEnable()
 				} else {
-					component.onDisable();
+					component.onDisable()
 				}
 			}
 		})
@@ -85,7 +85,7 @@ export class ComponentManager {
 	onUpdate(t: number) {
 		this.eachComponent(component => {
 			if (component.enabled) {
-				component.$onUpdate(t);
+				component.$onUpdate(t)
 			}
 		})
 	}
@@ -96,10 +96,10 @@ export class ComponentManager {
 	onInteract(type: string, e) {
 		this.eachComponent(component => {
 			if (component.enabled) {
-				let method = 'on' + type[0].toUpperCase() + type.substr(1);
+				let method = 'on' + type[0].toUpperCase() + type.substr(1)
 
 				if (component[method]) {
-					component[method](e);
+					component[method](e)
 				}
 			}
 		})
@@ -112,17 +112,17 @@ export class ComponentManager {
 	 * @param enabled
 	 */
 	addComponent(componentId: any, awake = true, enabled: boolean = false) {
-		let component = this.$instantiateComponent(componentId);
+		let component = this.$instantiateComponent(componentId)
 		if (!component) {
-			return;
+			return
 		}
 
 		if(enabled){
-			component.enabled = true;
+			component.enabled = true
 		}
-		this._add(component, undefined, awake);
+		this._add(component, undefined, awake)
 
-		return component;
+		return component
 	}
 
 	/**
@@ -131,29 +131,29 @@ export class ComponentManager {
 	 * @param index
 	 */
 	removeComponent(componentId: any, index: number = 0) {
-		let components;
+		let components
 		switch (typeof componentId) {
 			case 'string':
-				components = this._findByName(componentId);
-				break;
+				components = this._findByName(componentId)
+				break
 			case 'function':
-				components = this._find(componentId);
-				break;
+				components = this._find(componentId)
+				break
 		}
 		if (index !== undefined) {
-			components = [components[index]];
+			components = [components[index]]
 		}
 
-		this._remove(components);
+		this._remove(components)
 
-		return components;
+		return components
 	}
 
 	/**
 	 * 移除所有组件
 	 */
 	removeAllComponents() {
-		this._removeAll();
+		this._removeAll()
 	}
 
 	/**
@@ -163,9 +163,9 @@ export class ComponentManager {
 	getComponent(componentId) {
 		switch (typeof componentId) {
 			case 'string':
-				return this._getByName(componentId);
+				return this._getByName(componentId)
 			case 'function':
-				return this._getOne(componentId);
+				return this._getOne(componentId)
 		}
 	}
 
@@ -176,9 +176,9 @@ export class ComponentManager {
 	getComponents(componentId) {
 		switch (typeof componentId) {
 			case 'string':
-				return this._findByName(componentId);
+				return this._findByName(componentId)
 			case 'function':
-				return this._find(componentId);
+				return this._find(componentId)
 		}
 	}
 
@@ -186,7 +186,7 @@ export class ComponentManager {
 	 * 获取全部组件
 	 */
 	getAllComponents() {
-		return this.all;
+		return this.all
 	}
 
 	/**
@@ -198,25 +198,25 @@ export class ComponentManager {
 	private _add(component: Component, index?: number, awake = true) {
 
 		if (index == undefined || index < 0 || index >= this._components.length) {
-			index = this._components.length;
+			index = this._components.length
 		}
 
 		if (component.entityAdaptor == this._entityAdaptor) {
-			index--;
+			index--
 		}
 
-		const currentIndex = this._components.indexOf(component);
+		const currentIndex = this._components.indexOf(component)
 		if (currentIndex == index) {
-			return;
+			return
 		}
 
 		if (currentIndex >= 0) {
-			this._components.splice(currentIndex, 1);
+			this._components.splice(currentIndex, 1)
 		}
-		this._components.splice(index, 0, component);
+		this._components.splice(index, 0, component)
 
 		if (currentIndex < 0) {
-			this.$onAddComponent(component, awake);
+			this.$onAddComponent(component, awake)
 		}
 	}
 
@@ -227,9 +227,9 @@ export class ComponentManager {
 	private _remove(components) {
 		for (let component of components) {
 			if (component) {
-				this.$onRemoveComponent(component);
-				const index = this._components.indexOf(component);
-				this._components.splice(index, 1);
+				this.$onRemoveComponent(component)
+				const index = this._components.indexOf(component)
+				this._components.splice(index, 1)
 			}
 		}
 	}
@@ -239,8 +239,8 @@ export class ComponentManager {
 	 */
 	private _removeAll() {
 		while (this._components.length > 0) {
-			const component = this._components.shift();
-			this.$onRemoveComponent(component);
+			const component = this._components.shift()
+			this.$onRemoveComponent(component)
 		}
 	}
 
@@ -249,13 +249,13 @@ export class ComponentManager {
 	 * @param componentId
 	 */
 	private _findByName<T extends Component>(componentId: string): T[] {
-		let components = this._componentsNameMapping[componentId];
+		let components = this._componentsNameMapping[componentId]
 		if (!components) {
 			components = this._componentsNameMapping[componentId] = <T[]>this._components.filter((component: Component) => {
-				return component.constructor['__class__'] === componentId;
-			});
+				return component.constructor['__class__'] === componentId
+			})
 		}
-		return components;
+		return components
 	}
 
 	/**
@@ -263,13 +263,13 @@ export class ComponentManager {
 	 * @param clazz
 	 */
 	private _find<T extends Component>(clazz: new() => T): T[] {
-		let components = this._componentsDefMapping[clazz.name];
+		let components = this._componentsDefMapping[clazz.name]
 		if (!components) {
 			components = this._componentsDefMapping[clazz.name] = <T[]>this._components.filter((component: Component) => {
-				return component instanceof clazz;
-			});
+				return component instanceof clazz
+			})
 		}
-		return components;
+		return components
 	}
 
 	/**
@@ -277,7 +277,7 @@ export class ComponentManager {
 	 * @param name
 	 */
 	private _getByName<T extends Component>(name: string): T {
-		return this._findByName<T>(name)[0];
+		return this._findByName<T>(name)[0]
 	}
 
 	/**
@@ -285,14 +285,14 @@ export class ComponentManager {
 	 * @param clazz
 	 */
 	private _getOne<T extends Component>(clazz: new() => T): T {
-		return this._find<T>(clazz)[0];
+		return this._find<T>(clazz)[0]
 	}
 
 	/**
 	 * 获取所有组件
 	 */
 	private get all(): Component[] {
-		return this._components;
+		return this._components
 	}
 
 	/**
@@ -304,7 +304,7 @@ export class ComponentManager {
 		this.eachComponent(component => {
 			//if (component.enabled) {
 				if (component[methodName]) {
-					component[methodName].apply(component, args);
+					component[methodName].apply(component, args)
 				}
 			//}
 		})
@@ -316,11 +316,11 @@ export class ComponentManager {
 	 * @param awake
 	 */
 	$onAddComponent(component: Component, awake = true) {
-		this._componentsNameMapping = {};
-		this._componentsDefMapping = {};
+		this._componentsNameMapping = {}
+		this._componentsDefMapping = {}
 
 		if (awake) {
-			component.$awake(this._entityAdaptor);
+			component.$awake(this._entityAdaptor)
 		}
 	}
 
@@ -329,15 +329,15 @@ export class ComponentManager {
 	 * @param component
 	 */
 	$onRemoveComponent(component: Component) {
-		this._componentsNameMapping = {};
-		this._componentsDefMapping = {};
+		this._componentsNameMapping = {}
+		this._componentsDefMapping = {}
 
-		component.enabled = false;
-		component.$destroy();
+		component.enabled = false
+		component.$destroy()
 	}
 
 	$instantiateComponent(componentId: any): Component {
-		let def = this._app.$getComponentDef(componentId);
-		return new def();
+		let def = this._app.$getComponentDef(componentId)
+		return new def()
 	}
 }

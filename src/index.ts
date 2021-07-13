@@ -20,3 +20,5 @@ export * from './http-request'
 export * from './events'
 
 export * from './ReType'
+
+export * from './doc-declares'

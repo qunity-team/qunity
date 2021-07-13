@@ -5,22 +5,22 @@
 /**
  * 颜色
  */
-export type color = string | number;
+export type color = string | number
 
 /**
  * 资源
  */
-export type resource = any;
+export type resource = any
 
 /**
  * 原数据
  */
-export type raw = any;
+export type raw = any
 
 /**
  * 动态数据
  */
-export type dynamic = any;
+export type dynamic = any
 
 /**
  * 2d矢量

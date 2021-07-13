@@ -123,4 +123,5 @@ dist
 
 /docs/
 /rollup.config.js
+/tsconfig.json
 *.iml

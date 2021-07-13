@@ -254,7 +254,7 @@ var QunityEvent = /** @class */ (function (_super) {
                         callback.apply(thisObj, allParams);
                     }
                     catch (e) {
-                        //console.log(e);
+                        //console.log(e)
                     }
                     if (once) {
                         if (subscriber.entity) {
