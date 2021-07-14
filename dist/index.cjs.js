@@ -419,6 +419,7 @@ function transBaseProps(app, target, field, value, pid) {
 }
 //parse scene//
 function parseViewDoc(app, docSource) {
+    var _a;
     function p(props) {
         injectProps(app, this, props);
         if (props.active !== false && this.setActive) {
@@ -447,29 +448,30 @@ function parseViewDoc(app, docSource) {
         });
         return this;
     }
-    var pixiNodes = {};
-    var requireContext = {
-        'qunity': {
-            Doc: function (props) {
-                var obj = {
-                    kv: kv,
-                    p: p,
-                };
-                setTimeout(function () {
-                    delete obj['kv'];
-                    delete obj['p'];
-                });
-                return obj.p(props);
+    var implementNodes = {};
+    var requireContext = (_a = {
+            'qunity': {
+                Doc: function (props) {
+                    var obj = {
+                        kv: kv,
+                        p: p,
+                    };
+                    setTimeout(function () {
+                        delete obj['kv'];
+                        delete obj['p'];
+                    });
+                    return obj.p(props);
+                }
             }
         },
-        'qunity-pixi': pixiNodes,
-    };
+        _a[app.namespace] = implementNodes,
+        _a);
     function requireMethod(id) {
         return requireContext[id];
     }
     var entityNames = Object.keys(app.entityDefs);
     var _loop_1 = function (entityName) {
-        pixiNodes[entityName] = function (props) {
+        implementNodes[entityName] = function (props) {
             var entity = app.createEntity(entityName);
             if (props.uuid !== undefined) {
                 app.entityMap[props.uuid] = entity;
@@ -703,7 +705,11 @@ var propInEventName = memorize(function (prop, events) {
  * 应用
  */
 var Application = /** @class */ (function () {
-    function Application() {
+    /**
+     *
+     * @param namespace 命名空间
+     */
+    function Application(namespace) {
         var _this = this;
         this._componentDefs = {};
         this._entityDefs = {};
@@ -717,8 +723,19 @@ var Application = /** @class */ (function () {
         this._mainLoop = function (delta) {
             _this._adaptorOptions.traverseFunc(_this._adaptorOptions.stage, _this._onHit.bind(_this, delta));
         };
+        this._namespace = namespace;
         this._assetsManager = new AssetsManager(this);
     }
+    Object.defineProperty(Application.prototype, "namespace", {
+        /**
+         * 命名空间
+         */
+        get: function () {
+            return this._namespace;
+        },
+        enumerable: true,
+        configurable: true
+    });
     Object.defineProperty(Application.prototype, "launchOptions", {
         /**
          * 启动配置

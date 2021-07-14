@@ -5,7 +5,7 @@
 import resolve from '@rollup/plugin-node-resolve';
 import commonjs from '@rollup/plugin-commonjs';
 
-const {uglify} = require('rollup-plugin-uglify');
+const {terser} = require('rollup-plugin-terser');
 const typescript = require('rollup-plugin-typescript');
 
 const name = 'qunity';
@@ -16,12 +16,12 @@ const options = {
 	input: 'src/index.ts',
 	output: [
 		{
-			file: prod ? 'dist/index.umd.cjs.js' : 'dist/index.cjs.js',
+			file: prod ? 'dist/index.cjs.min.js' : 'dist/index.cjs.js',
 			sourcemap: true,
 			format: 'cjs',
 		},
 		{
-			file: prod ? 'dist/index.umd.esm.js' : 'dist/index.esm.js',
+			file: prod ? 'dist/index.esm.min.js' : 'dist/index.esm.js',
 			sourcemap: true,
 			format: 'esm',
 		},
@@ -40,7 +40,7 @@ const options = {
 			typescript: require('typescript'),
 		}),
 		commonjs(),
-		prod && uglify({}),
+		prod && terser(),
 	]
 };
 

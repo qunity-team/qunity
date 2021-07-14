@@ -26,6 +26,7 @@ export interface AdaptorOptions {
  * 应用
  */
 export class Application {
+	private _namespace: string
 	private _launchOptions: any
 	private _adaptorOptions: AdaptorOptions
 	private _componentDefs: any = {}
@@ -35,6 +36,13 @@ export class Application {
 	private _assetsManager: AssetsManager
 
 	entityMap = {}
+
+	/**
+	 * 命名空间
+	 */
+	get namespace(): string {
+		return this._namespace
+	}
 
 	/**
 	 * 启动配置
@@ -71,7 +79,12 @@ export class Application {
 		return this._adaptorOptions.stageSizeFunc()
 	}
 
-	constructor() {
+	/**
+	 *
+	 * @param namespace 命名空间
+	 */
+	constructor(namespace: string) {
+		this._namespace = namespace
 		this._assetsManager = new AssetsManager(this)
 	}
 
@@ -372,7 +385,7 @@ export class Application {
 		}
 		let exp = id.substr(i + 1)
 		let def = evalExp(exp, pkg)
-		if(def){
+		if (def) {
 			def['__class__'] = id
 		}
 		return def

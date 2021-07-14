@@ -250,7 +250,7 @@ export function parseViewDoc(app: Application, docSource): IDoc {
 		return this
 	}
 
-	const pixiNodes = {}
+	const implementNodes = {}
 	const requireContext = {
 		'qunity': {
 			Doc: function (props) {
@@ -265,7 +265,7 @@ export function parseViewDoc(app: Application, docSource): IDoc {
 				return obj.p(props)
 			}
 		},
-		'qunity-pixi': pixiNodes,
+		[app.namespace]: implementNodes
 	}
 
 	function requireMethod(id) {
@@ -274,7 +274,7 @@ export function parseViewDoc(app: Application, docSource): IDoc {
 
 	const entityNames = Object.keys(app.entityDefs)
 	for (let entityName of entityNames) {
-		pixiNodes[entityName] = function (props) {
+		implementNodes[entityName] = function (props) {
 			let entity = app.createEntity(entityName)
 			if (props.uuid !== undefined) {
 				app.entityMap[props.uuid] = entity
