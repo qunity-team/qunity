@@ -111,7 +111,7 @@ export class ComponentManager {
 	 * @param awake
 	 * @param enabled
 	 */
-	addComponent(componentId: any, awake = true, enabled: boolean = false) {
+	addComponent(componentId: any, awake = true, enabled: boolean = true) {
 		let component = this.$instantiateComponent(componentId)
 		if (!component) {
 			return

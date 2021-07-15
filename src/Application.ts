@@ -367,11 +367,11 @@ export class Application {
 			console.warn(`component [${id}] not exists.`)
 			return
 		}
-		const className = def['__class__']
+		/*const className = def['__class__']
 		if (!className) {
 			console.warn(`component [${id}] is not registered.`)
 			return
-		}
+		}*/
 
 		return def
 	}
