@@ -1,8 +1,8 @@
 {
 	"name": "qunity",
-	"version": "1.1.0",
-	"main": "dist/index.umd.js",
-	"module": "dist/index.esm.js",
+	"version": "1.1.4",
+	"main": "dist/qunity.umd.min.js",
+	"module": "dist/qunity.esm.min.js",
 	"types": "types/index.d.ts",
 	"license": "MIT",
 	"scripts": {

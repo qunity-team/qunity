@@ -16,17 +16,12 @@ const options = {
 	input: 'src/index.ts',
 	output: [
 		{
-			file: prod ? 'dist/index.cjs.min.js' : 'dist/index.cjs.js',
-			sourcemap: true,
-			format: 'cjs',
-		},
-		{
-			file: prod ? 'dist/index.esm.min.js' : 'dist/index.esm.js',
-			sourcemap: true,
+			file: prod ? `dist/${name}.esm.min.js` : `dist/${name}.esm.js`,
+			sourcemap: !prod,
 			format: 'esm',
 		},
 		{
-			file: prod ? 'dist/index.umd.min.js' : 'dist/index.umd.js',
+			file: prod ? `dist/${name}.umd.min.js` : `dist/${name}.umd.js`,
 			sourcemap: !prod,
 			format: 'umd',
 			name,
